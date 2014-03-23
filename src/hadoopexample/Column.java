@@ -79,11 +79,20 @@ public class Column {
     public static Column.Type getType(String type)
     {
         if (type.equalsIgnoreCase("string"))
+        {
+            System.out.println("#@# string type ");
             return Column.Type.STRING;
+        }
         if (type.equalsIgnoreCase("int"))
+        {
+            System.out.println("#@# int type: ");
             return Column.Type.INTEGER;
+        }
         if (type.equalsIgnoreCase("double"))
+        {
+            System.out.println("#@# double type ");
             return Column.Type.DOUBLE;
+        }
         return Column.Type.NONE;
     }
     

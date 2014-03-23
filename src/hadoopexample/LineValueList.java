@@ -36,6 +36,18 @@ public class LineValueList
         }
         return values;
     }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for (Entry<Integer, LineValue> e : Values.entrySet())
+        {
+            sb.append(e.getValue().toString());
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
 
     private HashMap<Integer, LineValue> Values;
 }

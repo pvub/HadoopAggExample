@@ -136,7 +136,9 @@ public class MapperEnvelope implements WritableComparable<MapperEnvelope> {
     @Override
     public void write(DataOutput out) throws IOException 
     {
-        out.writeBytes(serialize());
+        String str = serialize();
+        System.out.println("serialize: " + str);
+        out.writeBytes(str);
     }
 
     @Override

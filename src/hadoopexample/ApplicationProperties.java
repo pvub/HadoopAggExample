@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  *
@@ -32,8 +33,13 @@ public class ApplicationProperties {
     private static String COLUMNS_DEF="input.columns";
     private static String COLUMN_DEF="input.column.";
     
-    private LineKeyList LineKeys;
-    private HashMap<Integer, Column> Columns;
+    private LineKeyList LineKeys = null;
+    private HashMap<Integer, Column> Columns = null;
+    private LineValueList LineValues = null;
+    
+    public ApplicationProperties()
+    {
+    }
     
     public void load(String filename)
     {
@@ -48,7 +54,9 @@ public class ApplicationProperties {
             System.out.println("#@# Error loading file: " + e.getMessage());
         }
         
-        
+        loadColumns();
+        loadKeys();
+        loadValues();
     }
     
     public String getProperty(String key)
@@ -74,6 +82,7 @@ public class ApplicationProperties {
     
     private void loadKeys()
     {
+        if (LineKeys == null) LineKeys = new LineKeyList();
         Enumeration<Object> emKeys = prop.keys();
         while(emKeys.hasMoreElements()) 
         {
@@ -82,10 +91,11 @@ public class ApplicationProperties {
             {
                 String newKey = key.substring(KEY_DEF.length());
                 String columnIndices = prop.getProperty(key);
-                String[] strIndices = columnIndices.split("|");
+                String[] strIndices = columnIndices.split("\\|");
                 ArrayList<Integer> indices = new ArrayList<Integer>();
                 for (String strIndex : strIndices)
                 {
+                    System.out.println("#@# key: " + strIndex);
                     Integer columnindex = Integer.parseInt(strIndex);
                     indices.add(columnindex);
                 }
@@ -93,6 +103,7 @@ public class ApplicationProperties {
                 LineKeys.AddKey(rowKey);
             }
          }        
+        System.out.println("#@# Loaded Keys Size: " + LineKeys.GetKeys().size());
     }
     
     public LineKeyList getLineKeys()
@@ -102,6 +113,7 @@ public class ApplicationProperties {
     
     private void loadColumns()
     {
+        if (Columns == null) Columns = new HashMap<Integer, Column>();
         Enumeration<Object> emKeys = prop.keys();
         while(emKeys.hasMoreElements()) 
         {
@@ -110,7 +122,7 @@ public class ApplicationProperties {
             {
                 String strIndex = key.substring(COLUMN_DEF.length());
                 String columnLine = prop.getProperty(key);
-                String[] tokens = columnLine.split("|");
+                String[] tokens = columnLine.split("\\|");
                 int i = 0;
                 Integer iIndex = Integer.parseInt(strIndex);
                 String strName = "", strType = "", strGroup = "";
@@ -131,13 +143,67 @@ public class ApplicationProperties {
                     ++i;
                 }
                 Column col = new Column(strName, iIndex, strType, strGroup);
+                System.out.println("#@# Adding col ind:" + iIndex + " name:" + col.getName());
                 Columns.put(iIndex, col);
             }
-         }        
+         }    
+        System.out.println("#@# Loaded Columns Size: " + Columns.size());
+    }
+    
+    public Column getColumn(Integer index)
+    {
+        return Columns.get(index);
     }
     
     public HashMap<Integer, Column> getColumns()
     {
         return Columns;
+    }
+    
+    private void loadValues()
+    {
+        if (LineValues == null) LineValues = new LineValueList();
+        Enumeration<Object> emvalues = prop.keys();
+        while(emvalues.hasMoreElements())
+        {
+            String key = (String) emvalues.nextElement();
+            if (key.startsWith(VALUE_DEF))
+            {
+                String newVal = key.substring(VALUE_DEF.length());
+                
+                String columnValues = prop.getProperty(key);
+                System.out.println("#@# Value Line: " + columnValues);
+                
+                String[] tokens = columnValues.split("\\|");
+                Integer columnindex = Integer.parseInt(tokens[0]);
+                String agg         = tokens[1];
+                Column col          = getColumn(columnindex);
+                System.out.println("#@# inx:" + columnindex + " agg:" + agg);
+                
+                if (col.getDataType() == Column.Type.INTEGER)
+                {
+                    System.out.println("#@# Int: " + col.getName());
+                    LineValue lineValue = new LineValue<Integer>(columnindex, "int", agg);
+                    LineValues.AddLineValue(lineValue);
+                }
+                else if (col.getDataType() == Column.Type.DOUBLE)
+                {
+                    System.out.println("#@# double: " + col.getName());
+                    LineValue lineValue = new LineValue<Integer>(columnindex, "double", agg);
+                    LineValues.AddLineValue(lineValue);
+                }
+            }
+        }
+        System.out.println("#@# Loaded Values Size: " + LineValues.getValueList().size());
+    }
+
+    public LineValueList getLineValues()
+    {
+        return LineValues;
+    }
+    
+    public Properties getProperties()
+    {
+        return prop;
     }
 }
