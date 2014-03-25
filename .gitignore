@@ -1,0 +1,9 @@
+# build folder
+build/
+nbproject/
+
+
+#java compiled files
+*.class
+*.DS_Store
+
